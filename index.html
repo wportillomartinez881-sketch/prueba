@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Craft Login</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #f0f0f0; /* Fondo claro como en el video */
+            --form-bg: #ffffff;
+            --primary: #000000;
+            --primary-hover: #222222;
+            --success: #10b981;
+            --error: #ef4444;
+            --text-muted: #666666;
+            --border-color: #e0e0e0;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            font-family: var(--font-family);
+            color: #000000;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .login-container {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            width: 100%;
+            max-width: 1000px;
+            height: 650px;
+            background: var(--form-bg);
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .characters-column {
+            background: #e5e5e5; /* Fondo gris claro para la zona de juego de los personajes */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 40px;
+        }
+
+        .characters-stage {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            width: 100%;
+            max-width: 450px;
+            height: 320px;
+            position: relative;
+            /* Contenedor relativo para posicionar los personajes superpuestos como en el video */
+        }
+
+        .character-svg {
+            position: absolute;
+            bottom: 0;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.06));
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* Posicionamiento exacto y solapado (Z-Index) estilo el video */
+        #svg-char-orange {
+            width: 190px;
+            height: 110px;
+            left: 10px;
+            z-index: 4;
+        }
+
+        #svg-char-blue {
+            width: 105px;
+            height: 220px;
+            left: 110px;
+            z-index: 2;
+        }
+
+        #svg-char-black {
+            width: 75px;
+            height: 150px;
+            left: 185px;
+            z-index: 5;
+        }
+
+        #svg-char-yellow {
+            width: 90px;
+            height: 160px;
+            left: 235px;
+            z-index: 3;
+        }
+
+        .form-column {
+            background: var(--form-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 50px;
+        }
+
+        .glass-card {
+            width: 100%;
+            max-width: 340px;
+        }
+
+        .form-header {
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .form-header .logo-icon {
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .form-header h2 {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+            color: #000000;
+        }
+
+        .form-header p {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #000000;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            background: #ffffff;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: #000000;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #000000;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            outline: none;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            font-size: 12px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .checkbox-label input {
+            margin-right: 6px;
+        }
+
+        .forgot-pass {
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+
+        .form-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button {
+            cursor: pointer;
+            font-family: var(--font-family);
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+            color: #ffffff;
+            padding: 13px;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-loader {
+            width: 18px;
+            height: 18px;
+            border: 2px solid transparent;
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+            position: absolute;
+        }
+
+        .btn-google {
+            background: #ffffff;
+            border: 1.5px solid var(--border-color);
+            color: #000000;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn-google:hover {
+            background: #f9f9f9;
+        }
+
+        .toast-notification {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #000000;
+            color: #fff;
+            padding: 14px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            font-size: 13px;
+        }
+
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .signup-text {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 20px;
+        }
+
+        .signup-text a {
+            color: #000000;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 850px) {
+            .login-container {
+                grid-template-columns: 1fr;
+                max-width: 450px;
+                height: auto;
+            }
+            .characters-column {
+                padding: 30px;
+                height: 260px;
+            }
+            .characters-stage {
+                transform: scale(0.8);
+                transform-origin: bottom center;
+            }
+            .form-column {
+                padding: 35px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="login-container">
+        <section class="characters-column">
+            <div class="characters-stage" id="characters-stage">
+                
+                <svg id="svg-char-orange" class="character-svg" viewBox="0 0 190 110" data-personality="curious">
+                    <path d="M 5,110 A 90 90 0 0 1 185 110 Z" fill="#ff7a45" id="body"/>
+                    <g id="face-container">
+                        <circle cx="70" cy="70" r="5" fill="#000000" id="pupil-left"/>
+                        <circle cx="120" cy="70" r="5" fill="#000000" id="pupil-right"/>
+                        <path d="M 83,85 Q 95,94 107,85" stroke="#000000" stroke-width="3.5" stroke-linecap="round" fill="none" id="mouth"/>
+                    </g>
+                </svg>
+
+                <svg id="svg-char-blue" class="character-svg" viewBox="0 0 105 220" data-personality="leader">
+                    <path d="M 5,220 L 5,30 A 25 25 0 0 1 100 30 L 100,220 Z" fill="#6366f1" id="body"/>
+                    <g id="face-container">
+                        <circle cx="40" cy="65" r="5.5" fill="#000000" id="pupil-left"/>
+                        <circle cx="75" cy="65" r="5.5" fill="#000000" id="pupil-right"/>
+                        <path d="M 51,82 Q 57.5,86 64,82" stroke="#000000" stroke-width="3.5" stroke-linecap="round" fill="none" id="mouth"/>
+                    </g>
+                </svg>
+
+                <svg id="svg-char-black" class="character-svg" viewBox="0 0 75 150" data-personality="timid">
+                    <path d="M 5,150 L 5,20 A 15 15 0 0 1 70 20 L 70,150 Z" fill="#111111" id="body"/>
+                    <g id="face-container">
+                        <circle cx="28" cy="45" r="11" fill="#ffffff" id="eye-left-bg"/>
+                        <circle cx="28" cy="45" r="5.5" fill="#000000" id="pupil-left"/>
+                        
+                        <circle cx="48" cy="45" r="11" fill="#ffffff" id="eye-right-bg"/>
+                        <circle cx="48" cy="45" r="5.5" fill="#000000" id="pupil-right"/>
+                        
+                        <path d="M 33,68 Q 38,65 43,68" stroke="#ffffff" stroke-width="3" stroke-linecap="round" fill="none" id="mouth"/>
+                    </g>
+                </svg>
+
+                <svg id="svg-char-yellow" class="character-svg" viewBox="0 0 90 160" data-personality="wacky">
+                    <path d="M 5,160 L 5,45 A 40 40 0 0 1 85 45 L 85,160 Z" fill="#ffcd29" id="body"/>
+                    <g id="face-container">
+                        <circle cx="35" cy="70" r="5" fill="#000000" id="pupil-left"/>
+                        <circle cx="65" cy="65" r="5" fill="#000000" id="pupil-right"/>
+                        <path d="M 40,95 Q 50,85 60,95" stroke="#000000" stroke-width="3.5" stroke-linecap="round" fill="none" id="mouth"/>
+                    </g>
+                </svg>
+
+            </div>
+        </section>
+
+        <section class="form-column">
+            <div class="glass-card">
+                <header class="form-header">
+                    <div class="logo-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C12 2 12 8.5 12 12C12 15.5 12 22 12 22" stroke="black" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M2 12C2 12 8.5 12 12 12C15.5 12 22 12 22 12" stroke="black" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h2>Welcome back!</h2>
+                    <p>Please enter your details</p>
+                </header>
+
+                <form id="login-form" novalidate>
+                    <div class="input-group">
+                        <label for="email">Email</label>
+                        <div class="input-wrapper">
+                            <input type="email" id="email" placeholder="Enter your email" required autocomplete="username">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+                            <button type="button" class="toggle-password" id="toggle-password" aria-label="Mostrar contraseña">
+                                <svg class="eye-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="remember">
+                            Remember for 30 days
+                        </label>
+                        <a href="#" class="forgot-pass">Forgot password?</a>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary" id="btn-login">
+                            <span>Log in</span>
+                            <div class="btn-loader" id="btn-loader"></div>
+                        </button>
+                        
+                        <button type="button" class="btn-google" id="btn-google">
+                            <svg viewBox="0 0 24 24" width="16" height="16">
+                                <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.3 1 3.4 3.7 1.6 7.7l3.7 2.9C6.2 7.1 8.9 5 12 5z"/>
+                                <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.4h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.7z"/>
+                                <path fill="#FBBC05" d="M5.3 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.6 7.3C.6 9.2 0 11.4 0 12.6s.6 3.4 1.6 5.3l3.7-3.1z"/>
+                                <path fill="#34A552" d="M12 23c3.2 0 6-1.1 8-2.9l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.1-6.7-5.6L1.6 15.7C3.4 19.7 7.3 23 12 23z"/>
+                            </svg>
+                            Log in with Google
+                        </button>
+                    </div>
+
+                    <p class="signup-text">Don't have an account? <a href="#">Sign up</a></p>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast-notification" id="toast"></div>
+
+    <script>
+        // Configuración de los personajes para acoplarse con la lógica de JavaScript
+        const charactersConfig = [
+            { id: "char-orange", personality: "curious" },
+            { id: "char-blue", personality: "leader" },
+            { id: "char-black", personality: "timid" },
+            { id: "char-yellow", personality: "wacky" }
+        ];
+
+        // --- ANIMACIONES FLOTANTES (IDLE) ---
+        let idleTimelines = [];
+
+        function initIdleAnimations() {
+            const characters = document.querySelectorAll('.character-svg');
+            
+            characters.forEach((char) => {
+                const body = char.querySelector('#body');
+                const eyesBg = char.querySelectorAll('[id$="-bg"]');
+                
+                const delay = Math.random() * 1.2;
+                const duration = 2.5 + Math.random() * 1.5;
+                
+                // Efecto de respiración suave
+                const tl = gsap.timeline({ repeat: -1, yoyo: true, delay: delay });
+                if (body) {
+                    tl.to(body, { duration: duration, scaleY: 1.03, transformOrigin: "bottom center", ease: "sine.inOut" });
+                }
+                idleTimelines.push(tl);
+            });
+        }
+
+        // --- SEGUIMIENTO DE OJOS ---
+        function updateEyeTracking(mouseX, mouseY) {
+            const stages = document.querySelectorAll('.character-svg');
+            
+            stages.forEach((char) => {
+                const pupilLeft = char.querySelector('#pupil-left');
+                const pupilRight = char.querySelector('#pupil-right');
+                const body = char.querySelector('#body');
+                
+                if (!pupilLeft || !pupilRight || !body) return;
+                if (char.dataset.state === 'hiding') return;
+
+                const rect = body.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                const angle = Math.atan2(mouseY - centerY, mouseX - centerX);
+                const maxDistance = 5; // Distancia máxima de las pupilas
+                
+                const targetX = Math.cos(angle) * maxDistance;
+                const targetY = Math.sin(angle) * maxDistance;
+                
+                gsap.to([pupilLeft, pupilRight], {
+                    x: targetX,
+                    y: targetY,
+                    duration: 0.2,
+                    ease: "power1.out"
+                });
+            });
+        }
+
+        function centerEyes() {
+            gsap.to('[id^="pupil-"]', { x: 0, y: 0, duration: 0.4, ease: "power1.out" });
+        }
+
+        // --- CONTROLADORES DE ENTRADA Y ESTADOS ---
+        function handleEmailInput(value) {
+            const empty = value.trim() === '';
+            const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+            charactersConfig.forEach((cfg) => {
+                const char = document.getElementById(`svg-${cfg.id}`);
+                if (!char) return;
+                const mouth = char.querySelector('#mouth');
+
+                if (empty) {
+                    if (mouth) gsap.to(mouth, { attr: { d: getOriginalMouthPath(cfg.id) }, duration: 0.2 });
+                } else if (valid) {
+                    // Sonrisa general
+                    if (mouth) {
+                        const path = cfg.id === 'char-black' ? "M 28,65 Q 38,74 48,65" : "M 35,90 Q 50,105 65,90";
+                        gsap.to(mouth, { attr: { d: path }, duration: 0.2 });
+                    }
+                } else {
+                    // Preocupados
+                    if (mouth) {
+                        const path = cfg.id === 'char-black' ? "M 30,68 Q 38,60 46,68" : "M 38,96 Q 50,86 62,96";
+                        gsap.to(mouth, { attr: { d: path }, duration: 0.2 });
+                    }
+                }
+            });
+        }
+
+        function getOriginalMouthPath(id) {
+            if (id === 'char-orange') return "M 83,85 Q 95,94 107,85";
+            if (id === 'char-blue') return "M 51,82 Q 57.5,86 64,82";
+            if (id === 'char-black') return "M 33,68 Q 38,65 43,68";
+            return "M 40,95 Q 50,85 60,95";
+        }
+
+        function handlePasswordFocus() {
+            // Taparse los ojos / esconderse
+            charactersConfig.forEach((cfg) => {
+                const char = document.getElementById(`svg-${cfg.id}`);
+                if (!char) return;
+                char.dataset.state = 'hiding';
+
+                const pupils = char.querySelectorAll('[id^="pupil-"]');
+                const eyesBg = char.querySelectorAll('[id$="-bg"]');
+
+                // En el video se agachan y mueven las pupilas hacia arriba/esquina
+                gsap.to(char, { y: 40, duration: 0.4, ease: "power2.out" });
+                gsap.to(pupils, { y: -10, duration: 0.4 });
+                if (eyesBg.length > 0) {
+                    gsap.to(eyesBg, { scaleY: 0.2, transformOrigin: "center center", duration: 0.4 });
+                }
+            });
+        }
+
+        function resetCharacterStates() {
+            charactersConfig.forEach((cfg) => {
+                const char = document.getElementById(`svg-${cfg.id}`);
+                if (!char) return;
+                char.dataset.state = 'idle';
+
+                const pupils = char.querySelectorAll('[id^="pupil-"]');
+                const eyesBg = char.querySelectorAll('[id$="-bg"]');
+                const mouth = char.querySelector('#mouth');
+
+                gsap.to(char, { y: 0, duration: 0.4, ease: "power2.out" });
+                gsap.to(pupils, { x: 0, y: 0, duration: 0.4 });
+                if (eyesBg.length > 0) {
+                    gsap.to(eyesBg, { scaleY: 1, duration: 0.4 });
+                }
+                if (mouth) gsap.to(mouth, { attr: { d: getOriginalMouthPath(cfg.id) }, duration: 0.3 });
+            });
+        }
+
+        function playLoginSuccess() {
+            // Animación alegre de saltos
+            charactersConfig.forEach((cfg) => {
+                const char = document.getElementById(`svg-${cfg.id}`);
+                if (!char) return;
+                const mouth = char.querySelector('#mouth');
+                
+                if (mouth) {
+                    const path = cfg.id === 'char-black' ? "M 25,62 Q 38,80 51,62" : "M 30,85 Q 50,115 70,85";
+                    gsap.to(mouth, { attr: { d: path }, duration: 0.2 });
+                }
+
+                gsap.to(char, {
+                    y: -50,
+                    duration: 0.3,
+                    yoyo: true,
+                    repeat: 3,
+                    ease: "power1.out",
+                    delay: Math.random() * 0.15
+                });
+            });
+        }
+
+        function playLoginFailure() {
+            // Animación temblorosa de tristeza
+            charactersConfig.forEach((cfg) => {
+                const char = document.getElementById(`svg-${cfg.id}`);
+                if (!char) return;
+                const mouth = char.querySelector('#mouth');
+
+                if (mouth) {
+                    const path = cfg.id === 'char-black' ? "M 28,72 Q 38,58 48,72" : "M 34,102 Q 50,84 66,102";
+                    gsap.to(mouth, { attr: { d: path }, duration: 0.2 });
+                }
+
+                gsap.to(char, {
+                    x: "+=4",
+                    yoyo: true,
+                    repeat: 7,
+                    duration: 0.05,
+                    onComplete: () => {
+                        gsap.to(char, { x: 0, duration: 0.2 });
+                        setTimeout(resetCharacterStates, 3000);
+                    }
+                });
+            });
+        }
+
+        // --- CONTROLADORES DEL DOM ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('login-form');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const togglePasswordBtn = document.getElementById('toggle-password');
+            const btnLoader = document.getElementById('btn-loader');
+            const btnLoginSpan = document.querySelector('#btn-login span');
+
+            initIdleAnimations();
+
+            window.addEventListener('mousemove', (e) => {
+                updateEyeTracking(e.clientX, e.clientY);
+            });
+
+            document.addEventListener('mouseleave', () => {
+                centerEyes();
+            });
+
+            emailInput.addEventListener('input', (e) => {
+                handleEmailInput(e.target.value);
+            });
+
+            emailInput.addEventListener('focus', (e) => {
+                handleEmailInput(e.target.value);
+            });
+
+            emailInput.addEventListener('blur', () => {
+                resetCharacterStates();
+            });
+
+            passwordInput.addEventListener('focus', () => {
+                handlePasswordFocus();
+            });
+
+            passwordInput.addEventListener('blur', () => {
+                resetCharacterStates();
+            });
+
+            togglePasswordBtn.addEventListener('click', () => {
+                const isHidden = passwordInput.type === 'password';
+                passwordInput.type = isHidden ? 'text' : 'password';
+            });
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = emailInput.value;
+                const pass = passwordInput.value;
+
+                if (!email || pass.length < 6) {
+                    showToast('⚠️ Please enter correct details.');
+                    playLoginFailure();
+                    return;
+                }
+
+                setLoadingState(true);
+                
+                setTimeout(() => {
+                    setLoadingState(false);
+                    if (email === "demo@correo.com" && pass === "Password123!") {
+                        showToast('🚀 Logged in successfully!');
+                        playLoginSuccess();
+                    } else {
+                        showToast('❌ Invalid credentials.');
+                        playLoginFailure();
+                    }
+                }, 1500);
+            });
+
+            function setLoadingState(isLoading) {
+                if (isLoading) {
+                    btnLoader.style.display = 'block';
+                    btnLoginSpan.style.opacity = '0';
+                } else {
+                    btnLoader.style.display = 'none';
+                    btnLoginSpan.style.opacity = '1';
+                }
+            }
+
+            function showToast(message) {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
